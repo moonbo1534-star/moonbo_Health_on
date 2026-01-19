@@ -1,0 +1,6 @@
+{
+    "appId": "com.dailyworkout.moonbo",
+    "appName": "Daily Workout Moonbo",
+    "webDir": ".",
+    "bundledWebRuntime": false
+}

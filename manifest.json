@@ -1,16 +1,17 @@
 {
-  "name": "Moonbo Health",
-  "short_name": "MB Health",
+  "name": "데일리 워크아웃 플래너",
+  "short_name": "워크아웃",
+  "description": "체계적인 일일 운동 기록 및 타이머 앱",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
-  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
   "icons": [
     {
-      "src": "icon-512.png",
+      "src": "https://cdn-icons-png.flaticon.com/512/2964/2964514.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
