@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="일일 운동 기록 및 타이머 앱 - 주간 운동 스케줄 관리">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- 보안 메타 태그 -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin"><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://cdn-icons-png.flaticon.com; connect-src 'self';">
+
+    <title>💪 데일리 워크아웃 플래너</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <!-- 폭죽 효과를 위한 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 상단 고정 타이머 (운동 단계에서만 표시) -->
+        <header class="sticky-timer hidden" id="stickyTimer">
+            <div class="sticky-timer-content">
+                <span class="sticky-timer-display" id="stickyTimerDisplay">00:00</span>
+                <span class="sticky-timer-label" id="stickyTimerLabel">운동 중</span>
+            </div>
+            <div class="sticky-timer-progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </header>
+
+        <!-- [1단계] 설정 화면 (부위 선택) -->
+        <main id="setupView" class="view">
+            <header class="home-header">
+                <p class="home-date" id="homeDate">2026년 1월 19일</p>
+                <h1 class="home-day" id="homeDay">월요일</h1>
+                <p class="home-tagline">오늘도 한계를 넘어서세요! 🔥</p>
+            </header>
+
+            <!-- 가로 스크롤 부위 선택 -->
+            <section class="category-section">
+                <h2 class="section-title">🎯 운동 부위 선택</h2>
+                <div class="category-scroll" id="categoryScroll">
+                    <div class="category-card active" data-category="0">
+                        <span class="category-icon">🚣</span>
+                        <span class="category-name">등</span>
+                    </div>
+                    <div class="category-card" data-category="1">
+                        <span class="category-icon">🦍</span>
+                        <span class="category-name">가슴</span>
+                    </div>
+                    <div class="category-card" data-category="3">
+                        <span class="category-icon">💪</span>
+                        <span class="category-name">팔</span>
+                    </div>
+                    <div class="category-card" data-category="4">
+                        <span class="category-icon">🦵</span>
+                        <span class="category-name">하체</span>
+                    </div>
+                    <div class="category-card" data-category="5">
+                        <span class="category-icon">🔥</span>
+                        <span class="category-name">전신상체</span>
+                    </div>
+                    <div class="category-card" data-category="6">
+                        <span class="category-icon">🏃</span>
+                        <span class="category-name">유산소</span>
+                    </div>
+                    <div class="category-card" data-category="2">
+                        <span class="category-icon">😴</span>
+                        <span class="category-name">휴식</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="setup-controls">
+                <div class="action-card-btn" id="nextStepBtn">
+                    <div class="action-icon">🎯</div>
+                    <div class="action-text">운동 고르러 가기</div>
+                    <div class="action-subtext">오늘의 루틴을 구성해보세요</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- [2단계] 세부 운동 선택 화면 -->
+        <main id="selectionView" class="view hidden">
+            <header class="selection-header">
+                <button class="back-btn" id="backToSetupBtnTop">⬅️</button>
+                <h1 class="selection-title">운동 선택</h1>
+            </header>
+
+            <section class="cardio-toggle-section">
+                <label class="cardio-toggle">
+                    <input type="checkbox" id="cardioToggle">
+                    <span class="cardio-label">오늘 유산소도 할까요? 🏃‍♂️</span>
+                </label>
+            </section>
+
+            <div class="selection-list" id="selectionList">
+                <!-- 운동 목록 동적 생성 -->
+            </div>
+
+            <section class="abs-toggle-section">
+                <label class="cardio-toggle">
+                    <input type="checkbox" id="absToggle">
+                    <span class="cardio-label">마무리로 복근 운동도 하시겠습니까? 🍫</span>
+                </label>
+            </section>
+
+            <div class="selection-footer">
+                <div class="action-card-btn" id="startWorkoutBtn">
+                    <div class="action-icon">🚀</div>
+                    <div class="action-text">운동 시작하기</div>
+                    <div class="action-subtext">오늘의 한계를 넘어서세요!</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- [3단계] 운동 화면 -->
+        <main id="workoutView" class="view hidden">
+            <div class="exercise-cards" id="exerciseCards">
+                <!-- 운동 카드 동적 생성 -->
+            </div>
+
+            <div class="workout-footer-controls">
+                <button class="add-exercise-btn-main" id="addExerciseBtnMain">
+                    + 운동 추가
+                </button>
+
+                <div class="action-card-btn" id="checkAllSetsBtn"
+                    style="margin-bottom: 15px; background: var(--bg-card);">
+                    <div class="action-icon">✅</div>
+                    <div class="action-text">모든 세트 완료</div>
+                    <div class="action-subtext">모든 운동의 세트를 완료 처리합니다</div>
+                </div>
+
+                <div class="action-card-btn" id="completeWorkoutBtn">
+                    <div class="action-icon">🏆</div>
+                    <div class="action-text">오늘의 운동 완료!</div>
+                    <div class="action-subtext">수고하셨습니다, 기록을 저장할까요?</div>
+                </div>
+            </div>
+        </main>
+
+        <!-- [4단계] 캘린더 화면 -->
+        <main id="calendarView" class="view hidden">
+            <header class="calendar-header">
+                <button class="nav-btn" id="prevMonthBtn">◀</button>
+                <h1 id="calendarTitle">2024년 1월</h1>
+                <button class="nav-btn" id="nextMonthBtn">▶</button>
+            </header>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-value" id="monthWorkouts">0</span>
+                    <span class="stat-label">이번 달 운동</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="totalTime">0시간</span>
+                    <span class="stat-label">누적 시간</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="streakDays">0</span>
+                    <span class="stat-label">연속 일수</span>
+                </div>
+            </div>
+
+            <div class="calendar-grid" id="calendarGrid">
+                <!-- 캘린더 동적 생성 -->
+            </div>
+
+            <div class="action-card-btn" id="backToHomeBtn" style="margin-top: 30px;">
+                <div class="action-icon">🏠</div>
+                <div class="action-text">홈으로 돌아가기</div>
+                <div class="action-subtext">새로운 운동을 시작해볼까요?</div>
+            </div>
+        </main>
+
+        <!-- 운동 추가 모달 -->
+        <div class="add-exercise-modal" id="addExerciseModal">
+            <div class="modal-overlay" id="addModalOverlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>운동 추가</h2>
+                    <button class="modal-close-btn" id="addModalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="add-selection-list" id="addSelectionList">
+                        <!-- 추가 가능한 운동 목록 -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="confirm-add-btn" id="confirmAddBtn">선택한 운동 추가</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 휴식 팝업 -->
+        <div class="rest-popup" id="restPopup">
+            <div class="rest-content">
+                <div class="rest-title">휴식 중... 🧘</div>
+                <div class="rest-timer" id="restTimerDisplay">20</div>
+                <div class="rest-sub">다음 세트를 준비하세요!</div>
+            </div>
+        </div>
+
+        <!-- 축하 팝업 -->
+        <div class="celebration-popup" id="celebrationPopup">
+            <div class="celebration-content">
+                <div class="celebration-icon">🎉</div>
+                <h2 class="celebration-title">오늘 운동 완료!<br>수고하셨습니다</h2>
+                <p class="celebration-msg">꾸준함이 최고의 재능입니다.<br>내일도 함께해요!</p>
+                <div class="action-card-btn" id="celebrationCloseBtn"
+                    style="background: rgba(255, 255, 255, 0.1); margin-top: 20px;">
+                    <div class="action-icon">📊</div>
+                    <div class="action-text">기록 확인하기</div>
+                    <div class="action-subtext">오늘의 성과를 확인해보세요</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="workout-data.js"></script>
+    <script src="exercise-data.js"></script>
+    <script src="app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+
+</html>
